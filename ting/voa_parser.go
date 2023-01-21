@@ -18,6 +18,7 @@ type Voa struct {
 	Body           string
 	BodyWithHtml   string
 	ImageUrl       string
+	AudioUrl       string
 }
 
 func parseVoa(url string) (*Voa, error) {
@@ -39,14 +40,21 @@ func parseVoa(url string) (*Voa, error) {
 		return nil, err
 	}
 
-	contentNodes := doc.Find("#article-content").Nodes
+	articleContentNodes := doc.Find("#article-content").Nodes
 
-	if len(contentNodes) == 0 {
+	if len(articleContentNodes) == 0 {
 		return nil, errors.New("article content not found")
 	}
 
-	contentNode := goquery.NewDocumentFromNode(contentNodes[0]).Children().Nodes[0]
-	bodyWithHtml, body, err := parseContent(goquery.NewDocumentFromNode(contentNode).Children().Nodes)
+	articleContentNode := goquery.NewDocumentFromNode(articleContentNodes[0]).Children().Nodes[0]
+	bodyNodes := goquery.NewDocumentFromNode(articleContentNode).Children().Nodes
+	audioUrl, err := parseAudioUrl(bodyNodes[0])
+
+	if err != nil {
+		return nil, err
+	}
+
+	bodyWithHtml, body, err := parseContent(bodyNodes)
 
 	if err != nil {
 		return nil, err
@@ -56,9 +64,34 @@ func parseVoa(url string) (*Voa, error) {
 		Url:          url,
 		Body:         strings.Join(body, "\n"),
 		BodyWithHtml: strings.Join(bodyWithHtml, "\n"),
+		AudioUrl:     audioUrl,
 	}
 
 	return voa, nil
+}
+
+func parseAudioUrl(node *html.Node) (string, error) {
+	downloadNodes := goquery.NewDocumentFromNode(node).Find(".media-download li.subitem a").Nodes
+
+	if len(downloadNodes) == 0 {
+		return "", errors.New("no download nodes found")
+	}
+
+	attributes := downloadNodes[0].Attr
+
+	for _, attribute := range attributes {
+		if attribute.Key == "href" {
+			url := attribute.Val
+
+			if strings.Contains(url, "?") {
+				url = strings.Split(url, "?")[0]
+			}
+
+			return url, nil
+		}
+	}
+
+	return "", errors.New("no audio url found")
 }
 
 func parseContent(nodes []*html.Node) ([]string, []string, error) {
