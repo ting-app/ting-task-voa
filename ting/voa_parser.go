@@ -7,19 +7,7 @@ import (
 	"golang.org/x/net/html"
 	"net/http"
 	"strings"
-	"time"
 )
-
-type Voa struct {
-	Title          string
-	Description    string
-	Url            string
-	PublishedAtUtc time.Time
-	Body           string
-	BodyWithHtml   string
-	ImageUrl       string
-	AudioUrl       string
-}
 
 func parseVoa(url string) (*Voa, error) {
 	response, err := http.Get(url)
