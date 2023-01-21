@@ -7,7 +7,11 @@ import (
 	"time"
 )
 
+const programId = 2
+
 func RunTask(url string) error {
+	log.Println("Start to fetch voa")
+
 	parser := gofeed.NewParser()
 	feed, err := parser.ParseURL(url)
 
@@ -39,6 +43,51 @@ func RunTask(url string) error {
 			voas = append(voas, voa)
 		}
 	}
+
+	if voas == nil || len(voas) == 0 {
+		log.Println("No news found")
+
+		return nil
+	} else {
+		log.Printf("Found %v news\n", len(voas))
+	}
+
+	dbConfig, err := ParseDbConfig()
+
+	if err != nil {
+		return err
+	}
+
+	err = InitDb(dbConfig)
+
+	if err != nil {
+		return err
+	}
+
+	defer CloseDb()
+
+	savedTing := 0
+
+	for _, voa := range voas {
+		ting := Ting{
+			ProgramId:   programId,
+			Title:       voa.Title,
+			Description: voa.Description,
+			AudioUrl:    voa.AudioUrl,
+			Content:     voa.Body,
+			CreatedAt:   now,
+			UpdatedAt:   now,
+		}
+		err = saveTing(ting)
+
+		if err != nil {
+			return err
+		}
+
+		savedTing += 1
+	}
+
+	log.Printf("Saved %v news as ting\n", savedTing)
 
 	return nil
 }
