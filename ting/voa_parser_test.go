@@ -24,5 +24,13 @@ func TestVoaParser(t *testing.T) {
 		t.Fail()
 	}
 
-	assert.NotNil(t, t, voa)
+	assert.NotNil(t, voa)
+	assert.NotNil(t, voa.Title)
+	assert.NotNil(t, voa.Description)
+	assert.NotNil(t, voa.Url)
+	assert.NotNil(t, voa.PublishedAtUtc)
+	assert.NotNil(t, voa.BodyWithHtml)
+	assert.NotNil(t, voa.Body)
+	assert.NotNil(t, voa.ImageUrl)
+	assert.NotNil(t, voa.AudioUrl)
 }
