@@ -33,4 +33,11 @@ func TestVoaParser(t *testing.T) {
 	assert.NotNil(t, voa.Body)
 	assert.NotNil(t, voa.ImageUrl)
 	assert.NotNil(t, voa.AudioUrl)
+	assert.True(t, len(voa.Words) > 0)
+
+	for _, word := range voa.Words {
+		assert.NotNil(t, word.Word)
+		assert.NotNil(t, word.PartOfSpeech)
+		assert.NotNil(t, word.Definition)
+	}
 }

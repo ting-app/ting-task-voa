@@ -11,4 +11,5 @@ type Voa struct {
 	BodyWithHtml   string
 	ImageUrl       string
 	AudioUrl       string
+	Words          []Word
 }

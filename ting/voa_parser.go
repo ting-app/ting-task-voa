@@ -42,6 +42,12 @@ func parseVoa(url string) (*Voa, error) {
 		return nil, err
 	}
 
+	words, err := parseWords(bodyNodes)
+
+	if err != nil {
+		return nil, err
+	}
+
 	bodyWithHtml, body, err := parseContent(bodyNodes)
 
 	if err != nil {
@@ -53,6 +59,7 @@ func parseVoa(url string) (*Voa, error) {
 		Body:         strings.Join(body, "\n"),
 		BodyWithHtml: strings.Join(bodyWithHtml, "\n"),
 		AudioUrl:     audioUrl,
+		Words:        words,
 	}
 
 	return voa, nil
@@ -80,6 +87,55 @@ func parseAudioUrl(node *html.Node) (string, error) {
 	}
 
 	return "", errors.New("no audio url found")
+}
+
+func parseWords(nodes []*html.Node) ([]Word, error) {
+	var words []Word
+
+	for i := 0; i < len(nodes); i++ {
+		text := goquery.NewDocumentFromNode(nodes[i]).Text()
+
+		if text == "Words in This Story" {
+			startIndex := i + 1
+
+			for j := startIndex; j < len(nodes); j++ {
+				wordNode := goquery.NewDocumentFromNode(nodes[j])
+
+				if strings.HasPrefix(wordNode.Text(), "___") {
+					break
+				}
+
+				word := parseWord(wordNode)
+				words = append(words, word)
+			}
+
+			break
+		}
+	}
+
+	if len(words) == 0 {
+		return nil, errors.New("failed to parse words")
+	}
+
+	return words, nil
+}
+
+func parseWord(document *goquery.Document) Word {
+	word := document.Find("strong").Text()
+	rest := strings.Split(document.Text(), word)[1]
+	partOfSpeech := strings.TrimSpace(rest[0 : strings.Index(rest, ".")+1])
+
+	if strings.HasPrefix(partOfSpeech, "–") {
+		partOfSpeech = strings.Split(partOfSpeech, "–")[1]
+	}
+
+	definition := strings.TrimSpace(rest[strings.Index(rest, ".")+1:])
+
+	return Word{
+		Word:         word,
+		PartOfSpeech: partOfSpeech,
+		Definition:   definition,
+	}
 }
 
 func parseContent(nodes []*html.Node) ([]string, []string, error) {
