@@ -9,6 +9,8 @@ docker run -e DB_USER_NAME=user name of MySQL database \
   -e DB_PASSWORD=password of MySQL user \
   -e DB_HOST=host of MySQL database \
   -e DB_PORT=port of MySQL database \
+  -e ENABLE_SENTRY=true \
+  -e SENTRY_DSN=your sentry dsn \
   -d xiaodanmao/ting-task-voa:latest
 ```
 
