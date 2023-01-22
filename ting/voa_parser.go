@@ -106,7 +106,10 @@ func parseWords(nodes []*html.Node) ([]Word, error) {
 				}
 
 				word := parseWord(wordNode)
-				words = append(words, word)
+
+				if word != nil {
+					words = append(words, *word)
+				}
 			}
 
 			break
@@ -120,8 +123,13 @@ func parseWords(nodes []*html.Node) ([]Word, error) {
 	return words, nil
 }
 
-func parseWord(document *goquery.Document) Word {
+func parseWord(document *goquery.Document) *Word {
 	word := document.Find("strong").Text()
+
+	if word == "" {
+		return nil
+	}
+
 	rest := strings.Split(document.Text(), word)[1]
 	partOfSpeech := strings.TrimSpace(rest[0 : strings.Index(rest, ".")+1])
 
@@ -131,7 +139,7 @@ func parseWord(document *goquery.Document) Word {
 
 	definition := strings.TrimSpace(rest[strings.Index(rest, ".")+1:])
 
-	return Word{
+	return &Word{
 		Word:         word,
 		PartOfSpeech: partOfSpeech,
 		Definition:   definition,
