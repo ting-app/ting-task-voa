@@ -124,13 +124,23 @@ func parseWords(nodes []*html.Node) ([]Word, error) {
 }
 
 func parseWord(document *goquery.Document) *Word {
-	word := document.Find("strong").Text()
+	var words []string
+
+	// It might be a phrase
+	document.Find("strong").Each(func(i int, selection *goquery.Selection) {
+		wordNode := goquery.NewDocumentFromNode(selection.Nodes[0])
+
+		words = append(words, wordNode.Text())
+	})
+
+	word := strings.TrimSpace(strings.Join(words, " "))
 
 	if word == "" {
 		return nil
 	}
 
-	rest := strings.Split(document.Text(), word)[1]
+	all := document.Text()
+	rest := strings.Split(all, word)[1]
 	partOfSpeech := strings.TrimSpace(rest[0 : strings.Index(rest, ".")+1])
 
 	if strings.HasPrefix(partOfSpeech, "–") {
