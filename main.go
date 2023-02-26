@@ -31,21 +31,7 @@ func main() {
 	}
 
 	scheduler := gocron.NewScheduler(time.UTC)
-	_, err := scheduler.Every(1).Day().At("23:59").Do(func() {
-		channels := []string{"https://learningenglish.voanews.com/api/zpyp_e-rm_", "https://learningenglish.voanews.com/api/ztmp_eibp_", "https://learningenglish.voanews.com/api/zmmpqeb-po", "https://learningenglish.voanews.com/api/zmg_pebmyp"}
-
-		for _, channel := range channels {
-			err := ting.RunTask(channel)
-
-			if err != nil {
-				log.Printf("Run task error %v\n", err)
-
-				if enableSentry {
-					sentry.CaptureException(err)
-				}
-			}
-		}
-	})
+	_, err := scheduler.Every(1).Day().At("23:59").Do(run(enableSentry))
 
 	if err != nil {
 		log.Fatalf("Failed to schedule task, %v", err)
@@ -54,4 +40,22 @@ func main() {
 	log.Println("Task scheduled")
 
 	scheduler.StartBlocking()
+}
+
+func run(enableSentry bool) func() {
+	return func() {
+		channels := []string{"https://learningenglish.voanews.com/api/zpyp_e-rm_", "https://learningenglish.voanews.com/api/ztmp_eibp_", "https://learningenglish.voanews.com/api/zmmpqeb-po", "https://learningenglish.voanews.com/api/zmg_pebmyp"}
+
+		for _, channel := range channels {
+			err := ting.RunTask(channel)
+
+			if err != nil {
+				log.Printf("Run task error %v, channel=%s\n", err, channel)
+
+				if enableSentry {
+					sentry.CaptureException(err)
+				}
+			}
+		}
+	}
 }

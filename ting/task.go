@@ -10,7 +10,7 @@ import (
 const programId = 2
 
 func RunTask(url string) error {
-	log.Println("Start to fetch voa")
+	log.Printf("Start to fetch voa, url=%s\n", url)
 
 	parser := gofeed.NewParser()
 	feed, err := parser.ParseURL(url)
@@ -29,7 +29,9 @@ func RunTask(url string) error {
 			voa, err := parseVoa(item.Link)
 
 			if err != nil {
-				log.Fatalf("Parse voa error %v", err)
+				log.Printf("failed to parse voa, url=%s", item.Link)
+
+				return err
 			}
 
 			voa.Title = item.Title
@@ -45,11 +47,11 @@ func RunTask(url string) error {
 	}
 
 	if voas == nil || len(voas) == 0 {
-		log.Println("No news found")
+		log.Printf("No news found, url=%s\n", url)
 
 		return nil
 	} else {
-		log.Printf("Found %v news\n", len(voas))
+		log.Printf("Found %v news, url=%s\n", len(voas), url)
 	}
 
 	dbConfig, err := ParseDbConfig()
@@ -87,7 +89,7 @@ func RunTask(url string) error {
 		savedTing += 1
 	}
 
-	log.Printf("Saved %v news as ting\n", savedTing)
+	log.Printf("Saved %v news as ting, url=%s\n", savedTing, url)
 
 	return nil
 }

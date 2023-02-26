@@ -19,7 +19,7 @@ func parseVoa(url string) (*Voa, error) {
 	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
-		return nil, errors.New(fmt.Sprintf("Status code error: %d %s", response.StatusCode, response.Status))
+		return nil, errors.New(fmt.Sprintf("Status code error: %d %s, url=%s", response.StatusCode, response.Status, url))
 	}
 
 	doc, err := goquery.NewDocumentFromReader(response.Body)
@@ -31,7 +31,7 @@ func parseVoa(url string) (*Voa, error) {
 	articleContentNodes := doc.Find("#article-content").Nodes
 
 	if len(articleContentNodes) == 0 {
-		return nil, errors.New("article content not found")
+		return nil, errors.New(fmt.Sprintf("article content not found, url=%s", url))
 	}
 
 	articleContentNode := goquery.NewDocumentFromNode(articleContentNodes[0]).Children().Nodes[0]
