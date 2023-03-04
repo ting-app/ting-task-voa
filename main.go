@@ -55,7 +55,7 @@ func run(enableSentry bool) func() {
 			err := ting.RunTask(channel)
 
 			if err != nil {
-				log.Printf("Run task error %v, channel=%s\n", err, channel)
+				log.Printf("Run task error %v, channel=%v\n", err, channel)
 
 				if enableSentry {
 					sentry.CaptureException(err)
