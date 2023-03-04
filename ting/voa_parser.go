@@ -95,13 +95,14 @@ func parseWords(nodes []*html.Node) ([]Word, error) {
 	for i := 0; i < len(nodes); i++ {
 		text := goquery.NewDocumentFromNode(nodes[i]).Text()
 
-		if text == "Words in This Story" {
+		if strings.TrimSpace(text) == "Words in This Story" {
 			startIndex := i + 1
 
 			for j := startIndex; j < len(nodes); j++ {
 				wordNode := goquery.NewDocumentFromNode(nodes[j])
+				wordText := wordNode.Text()
 
-				if strings.HasPrefix(wordNode.Text(), "___") {
+				if strings.HasPrefix(wordText, "___") {
 					break
 				}
 
