@@ -44,7 +44,12 @@ func main() {
 
 func run(enableSentry bool) func() {
 	return func() {
-		channels := []string{"https://learningenglish.voanews.com/api/zpyp_e-rm_", "https://learningenglish.voanews.com/api/ztmp_eibp_", "https://learningenglish.voanews.com/api/zmmpqeb-po", "https://learningenglish.voanews.com/api/zmg_pebmyp"}
+		channels := []ting.Channel{
+			{Url: "https://learningenglish.voanews.com/api/zpyp_e-rm_", Tag: ting.Tag{Id: 1, Name: "Arts & Culture"}},
+			{Url: "https://learningenglish.voanews.com/api/ztmp_eibp_", Tag: ting.Tag{Id: 2, Name: "Education"}},
+			{Url: "https://learningenglish.voanews.com/api/zmmpqeb-po", Tag: ting.Tag{Id: 3, Name: "Health & Lifestyle"}},
+			{Url: "https://learningenglish.voanews.com/api/zmg_pebmyp", Tag: ting.Tag{Id: 4, Name: "Science & Technology"}},
+		}
 
 		for _, channel := range channels {
 			err := ting.RunTask(channel)

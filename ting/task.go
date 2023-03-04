@@ -9,7 +9,9 @@ import (
 
 const programId = 2
 
-func RunTask(url string) error {
+func RunTask(channel Channel) error {
+	url := channel.Url
+
 	log.Printf("Start to fetch voa, url=%s\n", url)
 
 	parser := gofeed.NewParser()
