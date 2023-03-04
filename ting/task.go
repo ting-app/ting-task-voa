@@ -82,7 +82,7 @@ func RunTask(channel Channel) error {
 			CreatedAt:   now,
 			UpdatedAt:   now,
 		}
-		err = saveTing(ting)
+		err = saveTing(ting, channel.Tag.Id)
 
 		if err != nil {
 			return err

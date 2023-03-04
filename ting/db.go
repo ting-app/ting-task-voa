@@ -35,11 +35,3 @@ func CloseDb() error {
 
 	return db.Close()
 }
-
-func Prepare(sql string) (*sql.Stmt, error) {
-	if db == nil {
-		return nil, errors.New("database is not initialized")
-	}
-
-	return db.Prepare(sql)
-}
