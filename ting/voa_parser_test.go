@@ -3,6 +3,7 @@ package ting
 import (
 	"github.com/mmcdole/gofeed"
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
 
@@ -16,28 +17,31 @@ func TestVoaParser(t *testing.T) {
 		t.Fail()
 	}
 
-	item := feed.Items[0]
-	voa, err := parseVoa(item.Link)
+	for _, item := range feed.Items {
+		if strings.HasSuffix(item.Link, ".html") {
+			voa, err := parseVoa(item.Link)
 
-	if err != nil {
-		t.Log("parse voa error", err)
-		t.Fail()
-	}
+			if err != nil {
+				t.Log("parse voa error", err)
+				t.Fail()
+			}
 
-	assert.NotNil(t, voa)
-	assert.NotNil(t, voa.Title)
-	assert.NotNil(t, voa.Description)
-	assert.NotNil(t, voa.Url)
-	assert.NotNil(t, voa.PublishedAtUtc)
-	assert.NotNil(t, voa.BodyWithHtml)
-	assert.NotNil(t, voa.Body)
-	assert.NotNil(t, voa.ImageUrl)
-	assert.NotNil(t, voa.AudioUrl)
-	assert.True(t, len(voa.Words) > 0)
+			assert.NotNil(t, voa)
+			assert.NotNil(t, voa.Title)
+			assert.NotNil(t, voa.Description)
+			assert.NotNil(t, voa.Url)
+			assert.NotNil(t, voa.PublishedAtUtc)
+			assert.NotNil(t, voa.BodyWithHtml)
+			assert.NotNil(t, voa.Body)
+			assert.NotNil(t, voa.ImageUrl)
+			assert.NotNil(t, voa.AudioUrl)
+			assert.True(t, len(voa.Words) > 0)
 
-	for _, word := range voa.Words {
-		assert.NotNil(t, word.Word)
-		assert.NotNil(t, word.PartOfSpeech)
-		assert.NotNil(t, word.Definition)
+			for _, word := range voa.Words {
+				assert.NotNil(t, word.Word)
+				assert.NotNil(t, word.PartOfSpeech)
+				assert.NotNil(t, word.Definition)
+			}
+		}
 	}
 }
