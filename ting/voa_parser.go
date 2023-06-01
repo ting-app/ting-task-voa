@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"golang.org/x/net/html"
+	"log"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
@@ -130,8 +132,15 @@ func parseWord(document *goquery.Document) *Word {
 	// It might be a phrase
 	document.Find("strong").Each(func(i int, selection *goquery.Selection) {
 		wordNode := goquery.NewDocumentFromNode(selection.Nodes[0])
+		wordText := strings.TrimSpace(wordNode.Text())
 
-		words = append(words, wordNode.Text())
+		matched, _ := regexp.MatchString("\\w+", wordText)
+
+		if matched {
+			words = append(words, wordText)
+		} else {
+			log.Printf("Unmatched word %s", wordText)
+		}
 	})
 
 	word := strings.TrimSpace(strings.Join(words, " "))
