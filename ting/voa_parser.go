@@ -37,14 +37,14 @@ func parseVoa(url string) (*Voa, error) {
 	}
 
 	articleContentNode := goquery.NewDocumentFromNode(articleContentNodes[0]).Children().Nodes[0]
-	bodyNodes := goquery.NewDocumentFromNode(articleContentNode).Children().Nodes
+	bodyNodes := parseBodyNodes(articleContentNode)
 	audioUrl, err := parseAudioUrl(bodyNodes[0])
 
 	if err != nil {
 		return nil, err
 	}
 
-	words, err := parseWords(bodyNodes)
+	words, err := parseWords(url, bodyNodes)
 
 	if err != nil {
 		return nil, err
@@ -91,27 +91,33 @@ func parseAudioUrl(node *html.Node) (string, error) {
 	return "", errors.New("no audio url found")
 }
 
-func parseWords(nodes []*html.Node) ([]Word, error) {
+func parseWords(url string, nodes []*html.Node) ([]Word, error) {
 	var words []Word
 
 	for i := 0; i < len(nodes); i++ {
 		text := goquery.NewDocumentFromNode(nodes[i]).Text()
 
-		if strings.TrimSpace(text) == "Words in This Story" {
+		if strings.Contains(strings.TrimSpace(text), "Words in This Story") {
 			startIndex := i + 1
 
 			for j := startIndex; j < len(nodes); j++ {
 				wordNode := goquery.NewDocumentFromNode(nodes[j])
-				wordText := wordNode.Text()
 
-				if strings.HasPrefix(wordText, "___") {
-					break
-				}
+				if wordNode.Nodes[0].Data == "div" {
+					for k := 0; k < wordNode.Children().Length(); k++ {
+						childNode := goquery.NewDocumentFromNode(wordNode.Children().Nodes[k])
+						word := addWord(url, childNode)
 
-				word := parseWord(wordNode)
+						if word != nil {
+							words = append(words, *word)
+						}
+					}
+				} else {
+					word := addWord(url, wordNode)
 
-				if word != nil {
-					words = append(words, *word)
+					if word != nil {
+						words = append(words, *word)
+					}
 				}
 			}
 
@@ -120,13 +126,25 @@ func parseWords(nodes []*html.Node) ([]Word, error) {
 	}
 
 	if len(words) == 0 {
-		return nil, errors.New("failed to parse words")
+		return nil, errors.New(fmt.Sprintf("failed to parse words, url=%s", url))
 	}
 
 	return words, nil
 }
 
-func parseWord(document *goquery.Document) *Word {
+func addWord(url string, wordNode *goquery.Document) *Word {
+	wordText := wordNode.Text()
+
+	if strings.HasPrefix(wordText, "___") {
+		return nil
+	}
+
+	word := parseWord(url, wordNode)
+
+	return word
+}
+
+func parseWord(url string, document *goquery.Document) *Word {
 	var words []string
 
 	// It might be a phrase
@@ -150,7 +168,13 @@ func parseWord(document *goquery.Document) *Word {
 	}
 
 	all := document.Text()
-	rest := strings.Split(all, word)[1]
+	rests := strings.Split(all, word)
+
+	if len(rests) == 1 {
+		log.Println("h")
+	}
+
+	rest := rests[1]
 	partOfSpeech := strings.TrimSpace(rest[0 : strings.Index(rest, ".")+1])
 
 	if strings.HasPrefix(partOfSpeech, "–") {
@@ -203,4 +227,14 @@ func parseContent(nodes []*html.Node) ([]string, []string, error) {
 	}
 
 	return bodyWithHtml, body, nil
+}
+
+func parseBodyNodes(articleContentNode *html.Node) []*html.Node {
+	children := goquery.NewDocumentFromNode(articleContentNode).Children()
+
+	if children.Length() <= 2 {
+		return goquery.NewDocumentFromNode(children.Nodes[0]).Children().Nodes
+	} else {
+		return children.Nodes
+	}
 }
