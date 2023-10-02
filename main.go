@@ -12,6 +12,7 @@ import (
 func main() {
 	enableSentry := os.Getenv("ENABLE_SENTRY") == "true"
 	sentryDsn := os.Getenv("SENTRY_DSN")
+	runMode := os.Getenv("RUN_MODE")
 
 	if enableSentry {
 		if sentryDsn == "" {
@@ -30,16 +31,20 @@ func main() {
 		}
 	}
 
-	scheduler := gocron.NewScheduler(time.UTC)
-	_, err := scheduler.Every(1).Day().At("23:59").Do(run(enableSentry))
+	if runMode == "immediately" {
+		run(enableSentry)()
+	} else {
+		scheduler := gocron.NewScheduler(time.UTC)
+		_, err := scheduler.Every(1).Day().At("23:59").Do(run(enableSentry))
 
-	if err != nil {
-		log.Fatalf("Failed to schedule task, %v", err)
+		if err != nil {
+			log.Fatalf("Failed to schedule task, %v", err)
+		}
+
+		log.Println("Task scheduled")
+
+		scheduler.StartBlocking()
 	}
-
-	log.Println("Task scheduled")
-
-	scheduler.StartBlocking()
 }
 
 func run(enableSentry bool) func() {
