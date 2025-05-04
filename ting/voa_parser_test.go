@@ -8,7 +8,7 @@ import (
 )
 
 func TestVoaParser(t *testing.T) {
-	feedUrl := "https://learningenglish.voanews.com/api/zpyp_e-rm_"
+	feedUrl := "https://learningenglish.voanews.com/api/zmg_pebmyp"
 	parser := gofeed.NewParser()
 	feed, err := parser.ParseURL(feedUrl)
 
